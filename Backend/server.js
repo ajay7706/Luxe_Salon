@@ -15,20 +15,31 @@ const allowedOrigins = [
   process.env.FRONTEND_ORIGIN,
   "http://localhost:5173",
   "https://localhost:5173",
+  // common Vercel pattern and your project URL
+  "https://gilded-appointments.vercel.app",
 ].filter(Boolean);
 
-app.use(
-  cors({
-    origin: function (origin, callback) {
-      if (!origin) return callback(null, true);
-      if (allowedOrigins.includes(origin) || /\.vercel\.app$/.test(origin)) {
-        return callback(null, true);
-      }
-      return callback(new Error("Not allowed by CORS"));
-    },
-    credentials: true,
-  })
-);
+const corsOptionsDelegate = function (req, callback) {
+  const origin = req.header("Origin");
+  let corsOptions;
+  if (!origin) {
+    corsOptions = { origin: true, credentials: true };
+  } else if (allowedOrigins.includes(origin) || /\.vercel\.app$/.test(origin)) {
+    corsOptions = {
+      origin: true,
+      credentials: true,
+      methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+      allowedHeaders: ["Content-Type", "Authorization"],
+      optionsSuccessStatus: 204,
+    };
+  } else {
+    corsOptions = { origin: false };
+  }
+  callback(null, corsOptions);
+};
+
+app.use(cors(corsOptionsDelegate));
+app.options("*", cors(corsOptionsDelegate));
 app.use(express.json());
 
 // Serve generated receipts as static files so they are accessible via URL
