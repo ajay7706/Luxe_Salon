@@ -39,7 +39,8 @@ const corsOptionsDelegate = function (req, callback) {
 };
 
 app.use(cors(corsOptionsDelegate));
-app.options("*", cors(corsOptionsDelegate));
+// Express 5 + path-to-regexp v6: '*' is invalid → use '/*' for wildcard preflight
+app.options("/*", cors(corsOptionsDelegate));
 app.use(express.json());
 
 // Serve generated receipts as static files so they are accessible via URL
