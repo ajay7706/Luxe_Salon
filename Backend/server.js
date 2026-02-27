@@ -27,16 +27,18 @@ app.use(
 
 if (process.env.NODE_ENV === "production" && !process.env.MONGO_URI) {
   console.error("Missing MONGO_URI in production environment");
-  process.exit(1);
 }
 
 const mongoUri = process.env.MONGO_URI || "mongodb://127.0.0.1:27017/salonDB";
+
+let mongoState = "disconnected";
 
 mongoose
   .connect(mongoUri, {
     serverSelectionTimeoutMS: 10000,
   })
   .then(() => {
+    mongoState = "connected";
     try {
       const redacted = mongoUri.replace(/\/\/.*@/, "//***:***@");
       console.log("MongoDB Connected Successfully", { uri: redacted });
@@ -46,7 +48,7 @@ mongoose
   })
   .catch((err) => {
     console.error("MongoDB connection error:", err?.message || err);
-    process.exit(1);
+    mongoState = "error";
   });
 
 mongoose.connection.on("error", (err) => {
@@ -54,6 +56,7 @@ mongoose.connection.on("error", (err) => {
 });
 mongoose.connection.on("disconnected", () => {
   console.warn("MongoDB disconnected");
+  mongoState = "disconnected";
 });
 
 // simple health route
@@ -63,12 +66,13 @@ app.get("/", (req, res) => {
 
 // detailed API status check
 app.get("/api/status", (req, res) => {
-  res.json({
-    status: "ok",
-    server: "running",
-    mongodb: "connected",
-    timestamp: new Date().toISOString()
-  });
+  let state = mongoState;
+  const rs = mongoose.connection.readyState;
+  if (rs === 1) state = "connected";
+  else if (rs === 2) state = "connecting";
+  else if (rs === 0) state = "disconnected";
+  else if (rs === 3) state = "disconnecting";
+  res.json({ status: "ok", server: "running", mongodb: state, timestamp: new Date().toISOString() });
 });
 
 // example protected route
