@@ -11,9 +11,21 @@ const app = express();
 // auth middleware helpers
 const { authenticate, requireAdmin } = require("./middleware/authMiddleware");
 
+const allowedOrigins = [
+  process.env.FRONTEND_ORIGIN,
+  "http://localhost:5173",
+  "https://localhost:5173",
+].filter(Boolean);
+
 app.use(
   cors({
-    origin: ["http://localhost:5173"],
+    origin: function (origin, callback) {
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.includes(origin) || /\.vercel\.app$/.test(origin)) {
+        return callback(null, true);
+      }
+      return callback(new Error("Not allowed by CORS"));
+    },
     credentials: true,
   })
 );
@@ -30,14 +42,25 @@ app.use(
    - use MONGO_URI env var, fallback to local
 ============================== */
 
-const mongoUri =
-  process.env.MONGO_URI || "mongodb://127.0.0.1:27017/salonDB";
+if (process.env.NODE_ENV === "production" && !process.env.MONGO_URI) {
+  console.error("Missing MONGO_URI in production environment");
+  process.exit(1);
+}
+
+const mongoUri = process.env.MONGO_URI || "mongodb://127.0.0.1:27017/salonDB";
 
 mongoose
   .connect(mongoUri, {
     serverSelectionTimeoutMS: 10000,
   })
-  .then(() => console.log("MongoDB Connected Successfully"))
+  .then(() => {
+    try {
+      const redacted = mongoUri.replace(/\/\/.*@/, "//***:***@");
+      console.log("MongoDB Connected Successfully", { uri: redacted });
+    } catch {
+      console.log("MongoDB Connected Successfully");
+    }
+  })
   .catch((err) => {
     console.error("MongoDB connection error:", err?.message || err);
     process.exit(1);
