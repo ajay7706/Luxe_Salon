@@ -17,6 +17,8 @@ app.use(
     credentials: true,
   })
 );
+// Express 5 compatible preflight handler for all routes
+app.options(/^\/.*/, cors({ origin: true, credentials: true }));
 app.use(express.json());
 
 // Serve generated receipts as static files so they are accessible via URL
