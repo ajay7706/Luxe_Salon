@@ -11,7 +11,28 @@ const app = express();
 // auth middleware helpers
 const { authenticate, requireAdmin } = require("./middleware/authMiddleware");
 
-app.use(cors());
+const allowedOrigins = [
+  process.env.FRONTEND_ORIGIN,
+  "https://gilded-appointments.vercel.app",
+  "http://localhost:5173",
+  "https://localhost:5173",
+].filter(Boolean);
+
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin) || /\.vercel\.app$/.test(origin)) {
+      return callback(null, true);
+    }
+    return callback(null, false);
+  },
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+  allowedHeaders: ["Content-Type", "Authorization"],
+};
+
+app.use(cors(corsOptions));
+app.options(/^\/.*/, cors(corsOptions));
 app.use(express.json());
 
 // Serve generated receipts as static files so they are accessible via URL
@@ -129,7 +150,7 @@ app.use((err, req, res, next) => {
    SERVER START
 ============================== */
 
-const PORT = process.env.PORT || 18012;
+const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
 });
