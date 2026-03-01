@@ -29,7 +29,7 @@ if (process.env.NODE_ENV === "production" && !process.env.MONGO_URI) {
   console.error("Missing MONGO_URI in production environment");
 }
 
-const mongoUri = process.env.MONGO_URI || "mongodb://127.0.0.1:27017/salonDB";
+const mongoUri = process.env.MONGO_URI || "mongodb+srv://kumararya41285_db_user:P8ojWwAYHAuBFM9C@cluster0.at2e3tf.mongodb.net/salonDb?retryWrites=true&w=majority";
 
 let mongoState = "disconnected";
 
