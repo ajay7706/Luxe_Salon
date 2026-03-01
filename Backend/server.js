@@ -33,6 +33,19 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 app.options(/^\/.*/, cors(corsOptions));
+app.use((req, res, next) => {
+  const origin = req.headers.origin;
+  const ok = !origin || allowedOrigins.includes(origin) || /\.vercel\.app$/.test(origin);
+  if (ok && origin) {
+    res.setHeader("Access-Control-Allow-Origin", origin);
+    res.setHeader("Vary", "Origin");
+    res.setHeader("Access-Control-Allow-Credentials", "true");
+    res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+    res.setHeader("Access-Control-Allow-Methods", "GET,POST,PUT,DELETE,OPTIONS");
+  }
+  if (req.method === "OPTIONS") return res.sendStatus(204);
+  next();
+});
 app.use(express.json());
 
 // Serve generated receipts as static files so they are accessible via URL
