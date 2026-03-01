@@ -2,7 +2,7 @@
 
 # Test MongoDB connection
 echo "Testing MongoDB..."
-mongosh "mongodb://127.0.0.1:27017/salonDB" --eval "db.version()" --quiet
+mongosh "mongodb+srv://kumararya41285_db_user:P8ojWwAYHAuBFM9C@cluster0.at2e3tf.mongodb.net/salonDb?retryWrites=true&w=majority" --eval "db.version()" --quiet
 
 # Test backend API
 echo -e "\n\nTesting Backend API..."
