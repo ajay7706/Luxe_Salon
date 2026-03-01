@@ -11,19 +11,14 @@ const app = express();
 // auth middleware helpers
 const { authenticate, requireAdmin } = require("./middleware/authMiddleware");
 
-const allowedOrigins = [process.env.FRONTEND_ORIGIN, "https://gilded-appointments.vercel.app", "http://localhost:5173", "https://localhost:5173"].filter(Boolean);
-const corsOptions = {
-  origin: (origin, cb) => {
-    if (!origin) return cb(null, true);
-    if (allowedOrigins.includes(origin) || /\.vercel\.app$/.test(origin)) return cb(null, true);
-    return cb(null, false);
-  },
-  credentials: true,
-  methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-  allowedHeaders: ["Content-Type", "Authorization"],
-};
-app.use(cors(corsOptions));
-app.options(/^\/.*/, cors(corsOptions));
+app.use(
+  cors({
+    origin: true,
+    credentials: true,
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
+  })
+);
 app.use(express.json());
 
 // Serve generated receipts as static files so they are accessible via URL
