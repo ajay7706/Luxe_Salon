@@ -24,34 +24,18 @@ const { authenticate, requireAdmin } = require("./middleware/authMiddleware");
 // Define your allowed origins
 // It's crucial to list the exact domain of your frontend application.
 // For development, you might include 'http://localhost:3000' or whatever your frontend dev server runs on.
-const allowedOrigins = [
-  'https://gilded-appointments.vercel.app',
-  // Add other frontend URLs if necessary, e.g., for local development:
-  // 'http://localhost:3000',
-  // 'http://127.0.0.1:3000'
-];
-
-app.use(
-  cors({
-    origin: function (origin, callback) {
-      // Allow requests with no origin (like mobile apps or curl requests)
-      // or if the origin is in our allowed list.
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error('Not allowed by CORS'), false);
-      }
-    },
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Explicitly allow methods
-    credentials: true, // Allow cookies and authorization headers
-    allowedHeaders: ['Content-Type', 'Authorization'], // Explicitly allow common headers
-  })
-);
-
-// You can typically remove the explicit `app.options` handler after configuring `app.use(cors())` this way,
-// as the `cors` middleware should handle preflight requests automatically.
-// If you still face issues, you can re-add it as a fallback, but try without it first.
-// app.options(/^\/.*/, cors({ origin: true, credentials: true })); // REMOVE THIS LINE for cleaner setup
+const allowedOrigins = ['https://gilded-appointments.vercel.app'];
+const vercelRegex = /\.vercel\.app$/;
+const corsOptions = {
+  origin: function (origin, callback) {
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes(origin) || vercelRegex.test(origin)) return callback(null, true);
+    return callback(null, false);
+  },
+  credentials: true,
+};
+app.use(cors(corsOptions));
+app.options(/^\/.*/, cors(corsOptions));
 
 // --- END OF CORRECTED CORS CONFIGURATION ---
 
