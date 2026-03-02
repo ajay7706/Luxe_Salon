@@ -24,18 +24,25 @@ const { authenticate, requireAdmin } = require("./middleware/authMiddleware");
 // Define your allowed origins
 // It's crucial to list the exact domain of your frontend application.
 // For development, you might include 'http://localhost:3000' or whatever your frontend dev server runs on.
-const allowedOrigins = ['https://gilded-appointments.vercel.app'];
-const vercelRegex = /\.vercel\.app$/;
-const corsOptions = {
-  origin: function (origin, callback) {
-    if (!origin) return callback(null, true);
-    if (allowedOrigins.includes(origin) || vercelRegex.test(origin)) return callback(null, true);
-    return callback(null, false);
-  },
-  credentials: true,
-};
-app.use(cors(corsOptions));
-app.options(/^\/.*/, cors(corsOptions));
+// const allowedOrigins = ['https://gilded-appointments.vercel.app'];
+// const vercelRegex = /\.vercel\.app$/;
+// const corsOptions = {
+  // origin: function (origin, callback) {
+    // if (!origin) return callback(null, true);
+    // if (allowedOrigins.includes(origin) || vercelRegex.test(origin)) return callback(null, true);
+    // return callback(null, false);
+  // },
+  // credentials: true,
+// };
+// app.use(cors(corsOptions));
+// app.options(/^\/.*/, cors(corsOptions));
+
+
+app.use(cors({
+  origin: 'https://gilded-appointments.vercel.app', // Allow only your frontend origin
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // Specify allowed methods
+  allowedHeaders: ['Content-Type', 'Authorization'], // Specify allowed headers from client
+}));
 
 // --- END OF CORRECTED CORS CONFIGURATION ---
 
